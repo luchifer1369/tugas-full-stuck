@@ -8,7 +8,7 @@ import cors from "cors";
 import helmet from "helmet";
 import mongoose from "mongoose";
 
-import config from "../config/config.js";
+import config from "./config/config.js";
 import userRoutes from "./routes/user.routes.js";
 import authRoutes from "./routes/auth.routes.js";
 import expenseRoutes from "./routes/expense.routes.js";

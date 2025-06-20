@@ -1,7 +1,7 @@
 // 📂 Lokasi: server/server.js
 
 import app from './express.js'
-import config from '../config/config.js'
+import config from './config/config.js'
 
 const PORT = config.port
 
