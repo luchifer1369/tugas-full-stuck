@@ -1,32 +1,35 @@
 // 📂 Lokasi: client/auth/api-auth.js
-
 const signin = async (user) => {
   try {
-    const response = await fetch('/auth/signin/', {
-      method: 'POST',
+    const response = await fetch("/auth/signin", {
+      method: "POST",
       headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json'
+        Accept: "application/json",
+        "Content-Type": "application/json",
       },
-      credentials: 'include',
-      body: JSON.stringify(user)
-    })
-    return await response.json()
+      body: JSON.stringify(user),
+    });
+
+    if (!response.ok) {
+      const text = await response.text();
+      console.error("❌ Server Response (HTML):", text);
+      throw new Error("Gagal login - Server mengembalikan HTML");
+    }
+
+    return await response.json();
   } catch (err) {
-    console.log(err)
+    console.error("❌ Signin Error:", err);
+    return { error: "Gagal login - Format tidak sesuai" };
   }
-}
+};
 
 const signout = async () => {
   try {
-    const response = await fetch('/auth/signout/', { method: 'GET' })
-    return await response.json()
+    let response = await fetch("/auth/signout", { method: "GET" });
+    return await response.json();
   } catch (err) {
-    console.log(err)
+    console.log(err);
   }
-}
+};
 
-export {
-  signin,
-  signout
-}
+export { signin, signout };

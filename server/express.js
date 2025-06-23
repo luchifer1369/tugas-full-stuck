@@ -1,7 +1,6 @@
 // 📂 Lokasi: server/express.js
 
 import express from "express";
-// ✅ Inisialisasi Express app
 const app = express();
 import path from "path";
 import cookieParser from "cookie-parser";
@@ -22,7 +21,6 @@ if (process.env.NODE_ENV !== "production") {
 
 const CURRENT_WORKING_DIR = process.cwd();
 
-// ✅ Koneksi ke MongoDB
 mongoose.Promise = global.Promise;
 mongoose.connect(config.mongoUri, {
   useNewUrlParser: true,
@@ -40,23 +38,23 @@ app.use(compress());
 app.use(helmet());
 app.use(cors());
 
-// ✅ Serve static files (bundle.js) dari /dist
-app.use("/dist", express.static(path.join(CURRENT_WORKING_DIR, "dist")));
-
-// ✅ Routing API
+// ✅ Routing API - PENTING! Ini harus di atas app.get("*")
 app.use("/api/users", userRoutes);
 app.use("/auth", authRoutes);
 app.use("/api/expenses", expenseRoutes);
 
-// ✅ Serve index.html untuk semua rute selain API
-app.get("*", (req, res) => {
-  res.sendFile(path.join(CURRENT_WORKING_DIR, "public/index.html"));
-});
+// ✅ Serve static bundle
+app.use("/dist", express.static(path.join(CURRENT_WORKING_DIR, "dist")));
 
-// ✅ Default error handler
+// ✅ Debug request logger (opsional)
 app.use((req, res, next) => {
   console.log("🛣️  Route:", req.method, req.originalUrl);
   next();
+});
+
+// ✅ Serve frontend (pastikan ini PALING BAWAH)
+app.get("*", (req, res) => {
+  res.sendFile(path.join(CURRENT_WORKING_DIR, "public/index.html"));
 });
 
 export default app;
