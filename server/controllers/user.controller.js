@@ -30,20 +30,16 @@ const list = async (req, res) => {
 
 const userByID = async (req, res, next, id) => {
   try {
-    const user = await User.findById(id);
-    if (!user) {
-      return res.status(400).json({
-        error: "User not found",
-      });
-    }
-    req.profile = user;
-    next();
+    const user = await User.findById(id)
+    if (!user)
+      return res.status(400).json({ error: "User not found" })
+    
+    req.profile = user
+    next()
   } catch (err) {
-    return res.status(400).json({
-      error: "Could not retrieve user",
-    });
+    return res.status(400).json({ error: "Could not retrieve user" })
   }
-};
+}
 
 const read = (req, res) => {
   req.profile.hashed_password = undefined;
@@ -81,11 +77,12 @@ const remove = async (req, res) => {
   }
 };
 
+
 export default {
   create,
   list,
-  userByID,
   read,
   update,
   remove,
-};
+  userByID 
+}

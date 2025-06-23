@@ -1,6 +1,8 @@
 // 📂 Lokasi: server/express.js
 
 import express from "express";
+// ✅ Inisialisasi Express app
+const app = express();
 import path from "path";
 import cookieParser from "cookie-parser";
 import compress from "compression";
@@ -12,16 +14,13 @@ import config from "./config/config.js";
 import userRoutes from "./routes/user.routes.js";
 import authRoutes from "./routes/auth.routes.js";
 import expenseRoutes from "./routes/expense.routes.js";
-import devBundle from './devBundle.js'
+import devBundle from "./devBundle.js";
 
-if (process.env.NODE_ENV !== 'production') {
-  devBundle.compile(app)
+if (process.env.NODE_ENV !== "production") {
+  devBundle.compile(app);
 }
 
 const CURRENT_WORKING_DIR = process.cwd();
-
-// ✅ Inisialisasi Express app
-const app = express();
 
 // ✅ Koneksi ke MongoDB
 mongoose.Promise = global.Promise;
@@ -55,12 +54,9 @@ app.get("*", (req, res) => {
 });
 
 // ✅ Default error handler
-app.use((err, req, res, next) => {
-  if (err.name === "UnauthorizedError") {
-    return res.status(401).json({ error: "Token tidak valid." });
-  } else if (err) {
-    return res.status(400).json({ error: err.message });
-  }
+app.use((req, res, next) => {
+  console.log("🛣️  Route:", req.method, req.originalUrl);
+  next();
 });
 
 export default app;

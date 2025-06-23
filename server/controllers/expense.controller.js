@@ -1,5 +1,3 @@
-// 📂 Lokasi: server/controllers/expense.controller.js
-
 import Expense from "../models/expense.model.js";
 
 const create = async (req, res) => {
@@ -41,14 +39,8 @@ const listByUser = async (req, res) => {
   }
 };
 
-const read = async (req, res) => {
-  try {
-    const expense = await Expense.findById(req.params.expenseId);
-    if (!expense) return res.status(404).json({ error: "Expense not found" });
-    res.json(expense);
-  } catch (err) {
-    res.status(400).json({ error: "Failed to read expense" });
-  }
+const read = (req, res) => {
+  return res.json(req.expense);
 };
 
 const update = async (req, res) => {
@@ -92,6 +84,20 @@ const currentMonthPreview = async (req, res) => {
   }
 };
 
+// ✅ Tambahan ini adalah solusi utama error "argument fn is required"
+const expenseByID = async (req, res, next, id) => {
+  try {
+    const expense = await Expense.findById(id);
+    if (!expense) {
+      return res.status(404).json({ error: "Expense not found" });
+    }
+    req.expense = expense;
+    next();
+  } catch (err) {
+    return res.status(400).json({ error: "Could not retrieve expense" });
+  }
+};
+
 export default {
   create,
   listByUser,
@@ -99,4 +105,5 @@ export default {
   update,
   remove,
   currentMonthPreview,
+  expenseByID, 
 };
