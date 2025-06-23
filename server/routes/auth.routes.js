@@ -1,14 +1,18 @@
-// 📂 Lokasi: server/routes/auth.routes.js
+// 📂 server/routes/user.routes.js
 
-import express from 'express'
-import authCtrl from '../controllers/auth.controller.js'
+import express from "express";
+import userCtrl from "../controllers/user.controller.js";
 
-const router = express.Router()
+const router = express.Router();
 
-router.route('/auth/signin')
-  .post(authCtrl.signin)
+router.route("/").get(userCtrl.list).post(userCtrl.create);
 
-router.route('/auth/signout')
-  .get(authCtrl.signout)
+router
+  .route("/:userId")
+  .get(userCtrl.read)
+  .put(userCtrl.update)
+  .delete(userCtrl.remove);
 
-export default router
+router.param("userId", userCtrl.userByID);
+
+export default router;

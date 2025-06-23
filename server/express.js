@@ -12,6 +12,11 @@ import config from "./config/config.js";
 import userRoutes from "./routes/user.routes.js";
 import authRoutes from "./routes/auth.routes.js";
 import expenseRoutes from "./routes/expense.routes.js";
+import devBundle from './devBundle.js'
+
+if (process.env.NODE_ENV !== 'production') {
+  devBundle.compile(app)
+}
 
 const CURRENT_WORKING_DIR = process.cwd();
 
