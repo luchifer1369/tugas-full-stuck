@@ -1,14 +1,19 @@
-// 📂 Lokasi: server/server.js
+// ✅ Import app dari file express.js yang sudah dikonfigurasi penuh
+import app from "./express.js";
 
-import app from './express.js'
-import config from './config/config.js'
+// ✅ Import konfigurasi umum (port, database URI, dll)
+import config from "./config/config.js";
 
-const PORT = config.port
+// ✅ Ambil port dari konfigurasi (bisa dari .env atau default ke 3000)
+const PORT = config.port;
 
+// ✅ Jalankan server menggunakan listen
 app.listen(PORT, (err) => {
   if (err) {
-    console.error('❌ Server failed to start:', err)
+    // ❌ Jika gagal, tampilkan pesan error
+    console.error("❌ Server failed to start:", err);
   } else {
-    console.info(`✅ Server started on port ${PORT}`)
+    // ✅ Jika berhasil, tampilkan pesan berhasil
+    console.info(`✅ Server started on port ${PORT}`);
   }
-})
+});

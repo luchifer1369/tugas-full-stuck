@@ -1,5 +1,10 @@
+// 📂 Lokasi: server/controllers/expense.controller.js
+
 import Expense from "../models/expense.model.js";
 
+/**
+ * 📥 Create a new expense for the logged-in user
+ */
 const create = async (req, res) => {
   try {
     const expense = new Expense({ ...req.body, user: req.auth._id });
@@ -10,23 +15,25 @@ const create = async (req, res) => {
   }
 };
 
+/**
+ * 📄 List all expenses for the current user
+ * Supports optional filtering by category or month (YYYY-MM format)
+ */
 const listByUser = async (req, res) => {
   const user = req.auth._id;
   const query = {};
 
+  // 🔍 Filter by category if provided
   if (req.query.category) {
     query.category = req.query.category;
   }
 
+  // 📅 Filter by month (e.g., 2025-06)
   if (req.query.month) {
     const start = new Date(req.query.month);
     const end = new Date(start);
     end.setMonth(start.getMonth() + 1);
-
-    query.incurred_on = {
-      $gte: start,
-      $lt: end,
-    };
+    query.incurred_on = { $gte: start, $lt: end };
   }
 
   try {
@@ -39,18 +46,22 @@ const listByUser = async (req, res) => {
   }
 };
 
+/**
+ * 📘 Read a specific expense (already preloaded in req.expense)
+ */
 const read = (req, res) => {
   return res.json(req.expense);
 };
 
+/**
+ * ✏️ Update a specific expense by ID
+ */
 const update = async (req, res) => {
   try {
     const updated = await Expense.findByIdAndUpdate(
       req.params.expenseId,
       req.body,
-      {
-        new: true,
-      }
+      { new: true }
     );
     res.json(updated);
   } catch (err) {
@@ -58,6 +69,9 @@ const update = async (req, res) => {
   }
 };
 
+/**
+ * ❌ Remove an expense
+ */
 const remove = async (req, res) => {
   try {
     const deleted = await Expense.findByIdAndDelete(req.params.expenseId);
@@ -67,11 +81,14 @@ const remove = async (req, res) => {
   }
 };
 
+/**
+ * 📊 Return preview of current month's expenses
+ */
 const currentMonthPreview = async (req, res) => {
   const start = new Date();
-  start.setDate(1);
+  start.setDate(1); // ⬅️ start of month
   const end = new Date(start);
-  end.setMonth(start.getMonth() + 1);
+  end.setMonth(start.getMonth() + 1); // ➡️ start of next month
 
   try {
     const preview = await Expense.find({
@@ -84,7 +101,10 @@ const currentMonthPreview = async (req, res) => {
   }
 };
 
-// ✅ Tambahan ini adalah solusi utama error "argument fn is required"
+/**
+ * 🧩 Middleware: Load expense by ID and attach to req
+ * Required for route parameters like :expenseId
+ */
 const expenseByID = async (req, res, next, id) => {
   try {
     const expense = await Expense.findById(id);
@@ -98,6 +118,7 @@ const expenseByID = async (req, res, next, id) => {
   }
 };
 
+// 🚀 Export semua controller untuk digunakan di router
 export default {
   create,
   listByUser,
@@ -105,5 +126,5 @@ export default {
   update,
   remove,
   currentMonthPreview,
-  expenseByID, 
+  expenseByID,
 };

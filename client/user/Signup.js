@@ -1,5 +1,6 @@
 // 📂 Lokasi: client/user/Signup.js
 
+// 📦 Import modul React dan komponen MUI yang diperlukan
 import React, { useState } from 'react'
 import {
   Card,
@@ -16,9 +17,10 @@ import {
   Icon
 } from '@mui/material'
 import { styled } from '@mui/system'
-import { create } from './api-user.js'
-import { Link } from 'react-router-dom'
+import { create } from './api-user.js'     // 🔁 Fungsi untuk kirim data signup ke backend
+import { Link } from 'react-router-dom'    // 🔗 Untuk navigasi ke halaman lain setelah signup
 
+// 🎨 Styled component untuk tampilan Card signup
 const StyledCard = styled(Card)(({ theme }) => ({
   maxWidth: 600,
   margin: 'auto',
@@ -27,30 +29,36 @@ const StyledCard = styled(Card)(({ theme }) => ({
   paddingBottom: theme.spacing(2)
 }))
 
+// 🎨 Styled component untuk TextField
 const StyledTextField = styled(TextField)(({ theme }) => ({
   marginLeft: theme.spacing(1),
   marginRight: theme.spacing(1),
   width: 300
 }))
 
+// 🎨 Styled component untuk tombol submit
 const SubmitButton = styled(Button)(({ theme }) => ({
   margin: 'auto',
   marginBottom: theme.spacing(2)
 }))
 
+// ✅ Komponen utama Signup
 export default function Signup() {
+  // 🔧 State untuk menyimpan data form dan feedback
   const [values, setValues] = useState({
     name: '',
     password: '',
     email: '',
-    open: false,
-    error: ''
+    open: false,    // 🚪 State untuk membuka dialog sukses
+    error: ''       // ❌ Pesan error jika validasi gagal atau backend error
   })
 
+  // 🔄 Fungsi handler perubahan input
   const handleChange = (name) => (event) => {
     setValues({ ...values, [name]: event.target.value })
   }
 
+  // 📤 Fungsi untuk submit data ke server
   const clickSubmit = () => {
     const user = {
       name: values.name || undefined,
@@ -58,10 +66,13 @@ export default function Signup() {
       password: values.password || undefined
     }
 
+    // 🔁 Kirim data ke API
     create(user).then((data) => {
       if (data.error) {
+        // ❌ Jika ada error dari server, tampilkan pesan error
         setValues({ ...values, error: data.error })
       } else {
+        // ✅ Jika berhasil, kosongkan error dan tampilkan dialog sukses
         setValues({ ...values, error: '', open: true })
       }
     })
@@ -69,11 +80,14 @@ export default function Signup() {
 
   return (
     <div>
+      {/* 📝 Form Sign Up */}
       <StyledCard>
         <CardContent>
           <Typography variant="h6" sx={{ mt: 2, color: 'primary.main' }}>
             Sign Up
           </Typography>
+
+          {/* Input Nama */}
           <StyledTextField
             id="name"
             label="Name"
@@ -82,6 +96,8 @@ export default function Signup() {
             margin="normal"
           />
           <br />
+
+          {/* Input Email */}
           <StyledTextField
             id="email"
             type="email"
@@ -91,6 +107,8 @@ export default function Signup() {
             margin="normal"
           />
           <br />
+
+          {/* Input Password */}
           <StyledTextField
             id="password"
             type="password"
@@ -100,12 +118,16 @@ export default function Signup() {
             margin="normal"
           />
           <br />
+
+          {/* Tampilkan pesan error jika ada */}
           {values.error && (
             <Typography component="p" color="error">
               <Icon color="error" sx={{ verticalAlign: 'middle' }}>error</Icon> {values.error}
             </Typography>
           )}
         </CardContent>
+
+        {/* Tombol Submit */}
         <CardActions>
           <SubmitButton color="primary" variant="contained" onClick={clickSubmit}>
             Submit
@@ -113,6 +135,7 @@ export default function Signup() {
         </CardActions>
       </StyledCard>
 
+      {/* 🪧 Dialog muncul jika signup sukses */}
       <Dialog open={values.open}>
         <DialogTitle>New Account</DialogTitle>
         <DialogContent>
@@ -121,6 +144,7 @@ export default function Signup() {
           </DialogContentText>
         </DialogContent>
         <DialogActions>
+          {/* Navigasi ke halaman signin */}
           <Link to="/signin">
             <Button color="primary" autoFocus variant="contained">
               Sign In

@@ -1,5 +1,6 @@
 // 📂 Lokasi: client/expense/NewExpense.js
 
+// 🔽 Import pustaka dan komponen yang diperlukan
 import React, { useState } from "react";
 import {
   Card,
@@ -13,10 +14,13 @@ import {
 import { styled } from "@mui/system";
 import { DateTimePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
+
+// 🔽 Import fungsi API dan autentikasi
 import { create } from "./api-expense.js";
 import auth from "../auth/auth-helper";
 import { Link, Navigate } from "react-router-dom";
 
+// 🎨 Komponen bergaya untuk tampilan form
 const StyledCard = styled(Card)(({ theme }) => ({
   maxWidth: 600,
   margin: "auto",
@@ -36,22 +40,27 @@ const SubmitButton = styled(Button)(({ theme }) => ({
   marginBottom: theme.spacing(2),
 }));
 
+// 🔰 Komponen utama untuk menambahkan data pengeluaran
 export default function NewExpense() {
-  const jwt = auth.isAuthenticated();
+  const jwt = auth.isAuthenticated(); // Ambil token user yang sedang login
+
+  // 🧠 State untuk menyimpan data form
   const [values, setValues] = useState({
-    title: "",
-    category: "",
-    amount: "",
-    incurred_on: new Date(),
-    notes: "",
-    error: "",
-    redirect: false,
+    title: "", // Judul pengeluaran
+    category: "", // Kategori pengeluaran
+    amount: "", // Nominal pengeluaran
+    incurred_on: new Date(), // Tanggal kejadian default: sekarang
+    notes: "", // Catatan tambahan
+    error: "", // Error message jika validasi gagal
+    redirect: false, // Redirect ke halaman utama jika berhasil
   });
 
+  // 📥 Tangani input teks
   const handleChange = (name) => (event) => {
     setValues({ ...values, [name]: event.target.value, error: "" });
   };
 
+  // 📆 Tangani perubahan tanggal
   const handleDateChange = (date) => {
     if (!isNaN(new Date(date))) {
       setValues({ ...values, incurred_on: date, error: "" });
@@ -60,20 +69,23 @@ export default function NewExpense() {
     }
   };
 
+  // 🔘 Tangani klik tombol submit
   const clickSubmit = () => {
     const { title, category, amount, incurred_on } = values;
 
-    // ✅ Validasi wajib
+    // ⚠️ Validasi input wajib
     if (!title || !category || !amount || !incurred_on) {
       setValues({ ...values, error: "All fields are required." });
       return;
     }
 
+    // ⚠️ Validasi tanggal
     if (isNaN(new Date(incurred_on))) {
       setValues({ ...values, error: "Date is not valid." });
       return;
     }
 
+    // 🔧 Siapkan data yang akan dikirim ke backend
     const expense = {
       title,
       category,
@@ -82,15 +94,17 @@ export default function NewExpense() {
       notes: values.notes || undefined,
     };
 
+    // 🚀 Kirim data ke backend
     create({ t: jwt.token }, expense).then((data) => {
       if (data.error) {
-        setValues({ ...values, error: data.error });
+        setValues({ ...values, error: data.error }); // ❌ Gagal simpan
       } else {
-        setValues({ ...values, redirect: true });
+        setValues({ ...values, redirect: true }); // ✅ Berhasil simpan
       }
     });
   };
 
+  // 🔁 Redirect setelah submit sukses
   if (values.redirect) {
     return <Navigate to="/" />;
   }
@@ -102,6 +116,7 @@ export default function NewExpense() {
           Expense Record
         </Typography>
 
+        {/* 📌 Input judul */}
         <StyledTextField
           id="title"
           label="Title"
@@ -111,6 +126,7 @@ export default function NewExpense() {
         />
         <br />
 
+        {/* 📌 Input jumlah */}
         <StyledTextField
           id="amount"
           label="Amount ($)"
@@ -121,6 +137,7 @@ export default function NewExpense() {
         />
         <br />
 
+        {/* 📌 Input kategori */}
         <StyledTextField
           id="category"
           label="Category"
@@ -130,22 +147,21 @@ export default function NewExpense() {
         />
         <br />
 
+        {/* 📌 Input tanggal kejadian */}
         <LocalizationProvider dateAdapter={AdapterDateFns}>
           <DateTimePicker
             label="Incurred on"
             value={values.incurred_on}
             onChange={handleDateChange}
-            slotProps={{
-              textField: {
-                variant: "outlined",
-                className: StyledTextField,
-              },
-            }}
+            renderInput={(params) => (
+              <StyledTextField {...params} margin="normal" />
+            )}
           />
         </LocalizationProvider>
         <br />
         <br />
 
+        {/* 📌 Input catatan tambahan */}
         <StyledTextField
           id="notes"
           label="Notes"
@@ -157,6 +173,7 @@ export default function NewExpense() {
         />
         <br />
 
+        {/* ⚠️ Tampilkan error jika ada */}
         {values.error && (
           <Typography component="p" color="error">
             <Icon color="error" sx={{ verticalAlign: "middle" }}>
@@ -167,6 +184,7 @@ export default function NewExpense() {
         )}
       </CardContent>
 
+      {/* 🔘 Tombol aksi */}
       <CardActions>
         <SubmitButton color="primary" variant="contained" onClick={clickSubmit}>
           Submit

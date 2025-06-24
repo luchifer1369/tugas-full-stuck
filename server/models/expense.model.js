@@ -1,36 +1,43 @@
-// 📂 Lokasi: server/models/expense.model.js
+import mongoose from "mongoose";
 
-import mongoose from 'mongoose'
-
+// Definisikan struktur dokumen Expense dalam MongoDB
 const ExpenseSchema = new mongoose.Schema(
   {
+    // Judul pengeluaran
     title: {
       type: String,
-      trim: true,
-      required: 'Title is required'
+      trim: true, // hapus spasi di awal/akhir string
+      required: "Title is required", // validasi wajib isi
     },
+    // Jumlah uang yang dikeluarkan
     amount: {
       type: Number,
-      required: 'Amount is required'
+      required: "Amount is required", // validasi wajib isi
     },
+    // Kategori pengeluaran (misalnya: makanan, transportasi, dll.)
     category: {
       type: String,
       trim: true,
-      required: 'Category is required'
+      required: "Category is required", // validasi wajib isi
     },
+    // Tanggal pengeluaran dilakukan
     incurred_on: {
       type: Date,
-      default: Date.now
+      default: Date.now, // default: waktu saat ini jika tidak diisi
     },
+    // Tanggal terakhir pengeluaran diubah (manual)
     updated: Date,
+    // Referensi ke user yang membuat pengeluaran
     user: {
       type: mongoose.Schema.ObjectId,
-      ref: 'User'
-    }
+      ref: "User", // relasi ke koleksi User
+    },
   },
   {
-    timestamps: true
+    // Aktifkan timestamp otomatis: createdAt dan updatedAt
+    timestamps: true,
   }
-)
+);
 
-export default mongoose.model('Expense', ExpenseSchema)
+// Ekspor model Expense agar bisa digunakan di controller atau tempat lain
+export default mongoose.model("Expense", ExpenseSchema);

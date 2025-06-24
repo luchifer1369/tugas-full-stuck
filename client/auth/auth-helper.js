@@ -1,33 +1,44 @@
 // 📂 Lokasi: client/auth/auth-helper.js
 
-import { signout } from './api-auth.js'
+// Import fungsi signout dari modul API untuk logout dari server
+import { signout } from "./api-auth.js";
 
+// Objek auth untuk menangani otentikasi pengguna di sisi client
 const auth = {
+  // Fungsi untuk memeriksa apakah pengguna sudah login (token tersimpan di sessionStorage)
   isAuthenticated() {
-    if (typeof window === 'undefined') return false
+    // Jika kode dijalankan di luar browser (misalnya saat server rendering), kembalikan false
+    if (typeof window === "undefined") return false;
 
-    const jwt = sessionStorage.getItem('jwt')
-    return jwt ? JSON.parse(jwt) : false
+    // Ambil JWT dari sessionStorage dan parse ke bentuk objek
+    const jwt = sessionStorage.getItem("jwt");
+    return jwt ? JSON.parse(jwt) : false;
   },
 
+  // Fungsi untuk menyimpan JWT ke sessionStorage setelah login berhasil
   authenticate(jwt, cb) {
-    if (typeof window !== 'undefined') {
-      sessionStorage.setItem('jwt', JSON.stringify(jwt))
+    if (typeof window !== "undefined") {
+      // Simpan JWT dalam format JSON string ke sessionStorage
+      sessionStorage.setItem("jwt", JSON.stringify(jwt));
     }
-    cb()
+    cb(); // Jalankan callback setelah penyimpanan berhasil
   },
 
+  // Fungsi untuk menghapus JWT dari sessionStorage saat logout
   clearJWT(cb) {
-    if (typeof window !== 'undefined') {
-      sessionStorage.removeItem('jwt')
+    if (typeof window !== "undefined") {
+      // Hapus token dari sessionStorage
+      sessionStorage.removeItem("jwt");
     }
-    cb()
+    cb(); // Jalankan callback setelah token dihapus
 
-    // Optional signout from server
+    // Opsional: Panggil fungsi logout dari server dan hapus cookie token
     signout().then(() => {
-      document.cookie = "t=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;"
-    })
-  }
-}
+      // Hapus cookie 't' yang digunakan untuk menyimpan token sisi server (jika ada)
+      document.cookie = "t=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+    });
+  },
+};
 
-export default auth
+// Ekspor objek auth agar bisa digunakan di seluruh aplikasi
+export default auth;

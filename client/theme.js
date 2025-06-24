@@ -16,9 +16,13 @@ const theme = createTheme({
       dark: "#c51162",
       contrastText: "#fff",
     },
+    // 🎨 Tambahan kustom yang bisa kamu gunakan via sx={{ color: 'openTitle' }}
     openTitle: "#3f4771",
     protectedTitle: "#f50057",
-    type: "light",
+
+    // MUI v5 masih mendukung 'mode' sebagai pengganti 'type'
+    // Tapi 'type' masih bekerja, walaupun deprecated
+    type: "light", // atau gunakan: mode: 'light'
   },
 });
 

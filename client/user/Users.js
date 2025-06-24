@@ -1,5 +1,6 @@
 // 📂 Lokasi: client/user/Users.js
 
+// 🧱 Import library React dan komponen MUI yang digunakan
 import React, { useState, useEffect } from "react";
 import {
   Paper,
@@ -12,10 +13,12 @@ import {
   IconButton,
   Typography,
 } from "@mui/material";
-import { styled } from "@mui/system";
-import { ArrowForward, Person } from "@mui/icons-material";
-import { Link } from "react-router-dom";
-import { list } from "./api-user.js";
+
+import { styled } from "@mui/system"; // 🎨 Untuk styling komponen MUI menggunakan theme
+import { ArrowForward, Person } from "@mui/icons-material"; // 🔘 Icon pengguna dan navigasi
+import { Link } from "react-router-dom"; // 🔗 Navigasi antar halaman
+import { list } from "./api-user.js"; // 📡 API untuk mengambil daftar user dari backend
+
 
 const StyledPaper = styled(Paper)(({ theme }) => ({
   padding: theme.spacing(1),
@@ -28,22 +31,22 @@ const Title = styled(Typography)(({ theme }) => ({
 }));
 
 export default function Users() {
-  const [users, setUsers] = useState([]);
+  const [users, setUsers] = useState([]); // 🔄 State untuk menyimpan data user
 
   useEffect(() => {
-    const abortController = new AbortController();
+    const abortController = new AbortController(); // 🛑 Untuk membatalkan fetch jika komponen unmount
     const signal = abortController.signal;
 
     list(signal).then((data) => {
       if (data && data.error) {
-        console.log(data.error);
+        console.log(data.error); // ⚠️ Tampilkan error jika ada
       } else {
-        setUsers(data);
+        setUsers(data); // ✅ Simpan data user ke dalam state
       }
     });
 
     return function cleanup() {
-      abortController.abort();
+      abortController.abort(); // 🧹 Batalkan request saat komponen dilepas
     };
   }, []);
 

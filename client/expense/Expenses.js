@@ -1,6 +1,9 @@
 // 📂 Lokasi: client/expense/Expenses.js
 
+// 🧩 Import React dan hook bawaan
 import React, { useState, useEffect } from "react";
+
+// 🎨 Komponen dari MUI
 import {
   Accordion,
   AccordionSummary,
@@ -13,6 +16,8 @@ import {
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { styled } from "@mui/system";
+
+// 🗓️ Komponen tanggal
 import {
   DatePicker,
   DateTimePicker,
@@ -20,11 +25,13 @@ import {
 } from "@mui/x-date-pickers";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 
+// 🔐 Autentikasi & API
 import auth from "../auth/auth-helper";
 import { listByUser, update } from "./api-expense.js";
 import DeleteExpense from "./DeleteExpense";
 import { Navigate } from "react-router-dom";
 
+// 🎨 Styling root container
 const Root = styled("div")(({ theme }) => ({
   width: "90%",
   maxWidth: 800,
@@ -33,31 +40,35 @@ const Root = styled("div")(({ theme }) => ({
   marginBottom: 40,
 }));
 
+// 🎨 Styling input
 const TextInput = styled(TextField)(({ theme }) => ({
   margin: "8px 16px",
   width: 240,
 }));
 
+// 🎨 Area filter tanggal (atas)
 const SearchSection = styled("div")({
   display: "flex",
   justifyContent: "flex-end",
   alignItems: "center",
 });
 
+// 🚀 Komponen utama untuk menampilkan dan mengelola daftar expense
 export default function Expenses() {
-  const [expenses, setExpenses] = useState([]);
-  const [redirectToSignin, setRedirectToSignin] = useState(false);
-  const [saved, setSaved] = useState(false);
-  const [error, setError] = useState("");
-  const jwt = auth.isAuthenticated();
+  const [expenses, setExpenses] = useState([]); // Data pengeluaran
+  const [redirectToSignin, setRedirectToSignin] = useState(false); // Redirect jika tidak login
+  const [saved, setSaved] = useState(false); // Menandai data tersimpan
+  const [error, setError] = useState(""); // Menampung error
+  const jwt = auth.isAuthenticated(); // Token user
 
+  // 🗓️ Tanggal default untuk pencarian awal bulan
   const today = new Date(),
     y = today.getFullYear(),
     m = today.getMonth();
   const [firstDay, setFirstDay] = useState(new Date(y, m, 1));
   const [lastDay, setLastDay] = useState(new Date(y, m + 1, 0));
 
-  // ✅ Perbaikan: kirim parameter 'month' saja
+  // 🔄 Fetch data awal berdasarkan bulan saat ini
   useEffect(() => {
     const abortController = new AbortController();
     const signal = abortController.signal;
@@ -73,11 +84,13 @@ export default function Expenses() {
     return () => abortController.abort();
   }, []);
 
+  // 📆 Handle perubahan tanggal filter
   const handleDateChange = (name) => (date) => {
     if (name === "firstDay") setFirstDay(date);
     else setLastDay(date);
   };
 
+  // 🔍 Ambil data saat tombol GO ditekan
   const searchClicked = () => {
     listByUser({ month: firstDay }, { t: jwt.token }).then((data) => {
       if (data.error) setRedirectToSignin(true);
@@ -85,18 +98,21 @@ export default function Expenses() {
     });
   };
 
+  // 🔧 Handle perubahan nilai input (title, amount, category, notes)
   const handleChange = (name, index) => (event) => {
     const updated = [...expenses];
     updated[index][name] = event.target.value;
     setExpenses(updated);
   };
 
+  // 🔧 Update tanggal untuk setiap item
   const handleUpdateDate = (index) => (date) => {
     const updated = [...expenses];
     updated[index].incurred_on = date;
     setExpenses(updated);
   };
 
+  // 💾 Klik tombol update - simpan ke backend
   const clickUpdate = (index) => {
     const expense = expenses[index];
     update({ expenseId: expense._id }, { t: jwt.token }, expense).then(
@@ -111,15 +127,18 @@ export default function Expenses() {
     );
   };
 
+  // 🗑️ Hapus data dari UI setelah backend berhasil hapus
   const removeExpense = (expense) => {
     const updated = expenses.filter((e) => e._id !== expense._id);
     setExpenses(updated);
   };
 
+  // 🔐 Redirect ke signin jika tidak login
   if (redirectToSignin) return <Navigate to="/signin" />;
 
   return (
     <Root>
+      {/* 🔍 Bagian filter tanggal */}
       <SearchSection>
         <LocalizationProvider dateAdapter={AdapterDateFns}>
           <DatePicker
@@ -145,6 +164,7 @@ export default function Expenses() {
         </Button>
       </SearchSection>
 
+      {/* 📝 Tampilkan setiap expense dalam accordion */}
       {expenses.map((expense, index) => (
         <Accordion key={index}>
           <AccordionSummary expandIcon={<ExpandMoreIcon />}>
@@ -167,6 +187,8 @@ export default function Expenses() {
               </Typography>
             </div>
           </AccordionSummary>
+
+          {/* 🔧 Form edit untuk setiap item */}
           <AccordionDetails sx={{ display: "block" }}>
             <TextField
               label="Title"
@@ -212,6 +234,7 @@ export default function Expenses() {
               margin="normal"
             />
 
+            {/* 🔘 Tombol update dan delete */}
             <div style={{ textAlign: "right" }}>
               {error && (
                 <Typography component="p" color="error">
