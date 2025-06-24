@@ -77,7 +77,14 @@ export default function Expenses() {
       if (data.error) {
         setRedirectToSignin(true);
       } else {
-        setExpenses(data);
+        // ✅ Pastikan setiap incurred_on adalah Date object valid
+        const validData = data.map((item) => ({
+          ...item,
+          incurred_on: item.incurred_on
+            ? new Date(item.incurred_on)
+            : new Date(),
+        }));
+        setExpenses(validData);
       }
     });
 
@@ -94,7 +101,15 @@ export default function Expenses() {
   const searchClicked = () => {
     listByUser({ month: firstDay }, { t: jwt.token }).then((data) => {
       if (data.error) setRedirectToSignin(true);
-      else setExpenses(data);
+      else {
+        const validData = data.map((item) => ({
+          ...item,
+          incurred_on: item.incurred_on
+            ? new Date(item.incurred_on)
+            : new Date(),
+        }));
+        setExpenses(validData);
+      }
     });
   };
 
