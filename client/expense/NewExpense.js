@@ -49,19 +49,36 @@ export default function NewExpense() {
   });
 
   const handleChange = (name) => (event) => {
-    setValues({ ...values, [name]: event.target.value });
+    setValues({ ...values, [name]: event.target.value, error: "" });
   };
 
   const handleDateChange = (date) => {
-    setValues({ ...values, incurred_on: date });
+    if (!isNaN(new Date(date))) {
+      setValues({ ...values, incurred_on: date, error: "" });
+    } else {
+      setValues({ ...values, error: "Invalid date selected." });
+    }
   };
 
   const clickSubmit = () => {
+    const { title, category, amount, incurred_on } = values;
+
+    // ✅ Validasi wajib
+    if (!title || !category || !amount || !incurred_on) {
+      setValues({ ...values, error: "All fields are required." });
+      return;
+    }
+
+    if (isNaN(new Date(incurred_on))) {
+      setValues({ ...values, error: "Date is not valid." });
+      return;
+    }
+
     const expense = {
-      title: values.title || undefined,
-      category: values.category || undefined,
-      amount: values.amount || undefined,
-      incurred_on: values.incurred_on || undefined,
+      title,
+      category,
+      amount,
+      incurred_on,
       notes: values.notes || undefined,
     };
 
@@ -119,7 +136,10 @@ export default function NewExpense() {
             value={values.incurred_on}
             onChange={handleDateChange}
             slotProps={{
-              textField: { variant: "outlined", className: StyledTextField },
+              textField: {
+                variant: "outlined",
+                className: StyledTextField,
+              },
             }}
           />
         </LocalizationProvider>
@@ -146,6 +166,7 @@ export default function NewExpense() {
           </Typography>
         )}
       </CardContent>
+
       <CardActions>
         <SubmitButton color="primary" variant="contained" onClick={clickSubmit}>
           Submit

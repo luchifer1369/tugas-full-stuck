@@ -57,11 +57,12 @@ export default function Expenses() {
   const [firstDay, setFirstDay] = useState(new Date(y, m, 1));
   const [lastDay, setLastDay] = useState(new Date(y, m + 1, 0));
 
+  // ✅ Perbaikan: kirim parameter 'month' saja
   useEffect(() => {
     const abortController = new AbortController();
     const signal = abortController.signal;
 
-    listByUser({ firstDay, lastDay }, { t: jwt.token }, signal).then((data) => {
+    listByUser({ month: firstDay }, { t: jwt.token }, signal).then((data) => {
       if (data.error) {
         setRedirectToSignin(true);
       } else {
@@ -78,7 +79,7 @@ export default function Expenses() {
   };
 
   const searchClicked = () => {
-    listByUser({ firstDay, lastDay }, { t: jwt.token }).then((data) => {
+    listByUser({ month: firstDay }, { t: jwt.token }).then((data) => {
       if (data.error) setRedirectToSignin(true);
       else setExpenses(data);
     });
@@ -154,7 +155,9 @@ export default function Expenses() {
               <Divider />
               <Typography>{expense.category}</Typography>
               <Typography sx={{ fontSize: "0.9em", color: "#888" }}>
-                {new Date(expense.incurred_on).toLocaleDateString()}
+                {expense.incurred_on && !isNaN(new Date(expense.incurred_on))
+                  ? new Date(expense.incurred_on).toLocaleDateString()
+                  : "Invalid date"}
               </Typography>
             </div>
             <div>
