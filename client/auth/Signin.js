@@ -1,140 +1,98 @@
-// 📂 Lokasi: client/auth/Signin.js
-
-// ✅ Import dependensi React dan komponen MUI
 import React, { useState } from "react";
 import {
   Card,
   CardActions,
   CardContent,
+  Typography,
   Button,
   TextField,
-  Typography,
   Icon,
 } from "@mui/material";
-import { styled } from "@mui/system";
-
-// ✅ Import navigasi dari React Router
 import { Navigate, useLocation } from "react-router-dom";
-
-// ✅ Import modul autentikasi lokal
 import auth from "./auth-helper";
 import { signin } from "./api-auth";
+import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
 
-// ✅ Styling komponen Card menggunakan styled MUI
-const StyledCard = styled(Card)(({ theme }) => ({
-  maxWidth: 600,
-  margin: "auto",
-  textAlign: "center",
-  marginTop: theme.spacing(5),
-  paddingBottom: theme.spacing(2),
-}));
-
-// ✅ Styling TextField
-const StyledTextField = styled(TextField)(({ theme }) => ({
-  marginLeft: theme.spacing(1),
-  marginRight: theme.spacing(1),
-  width: 300,
-}));
-
-// ✅ Styling tombol submit
-const SubmitButton = styled(Button)(({ theme }) => ({
-  margin: "auto",
-  marginBottom: theme.spacing(2),
-}));
-
-// ✅ Komponen utama untuk halaman login
 export default function Signin() {
   const location = useLocation();
-
-  // 🔒 State lokal untuk menyimpan nilai input dan status autentikasi
   const [values, setValues] = useState({
-    email: "", // Email pengguna
-    password: "", // Password pengguna
-    error: "", // Menyimpan pesan error jika login gagal
-    redirectToReferrer: false, // Menentukan apakah harus redirect setelah login sukses
+    email: "",
+    password: "",
+    error: "",
+    redirectToReferrer: false,
   });
 
-  // 📥 Handler untuk menangani input teks (email & password)
   const handleChange = (name) => (event) => {
     setValues({ ...values, [name]: event.target.value });
   };
 
-  // 📤 Fungsi untuk mengirim data login ke server
   const clickSubmit = () => {
     const user = {
       email: values.email || undefined,
       password: values.password || undefined,
     };
-
-    // 🔐 Kirim permintaan login ke API
     signin(user).then((data) => {
       if (data.error) {
-        // ❌ Tampilkan pesan error jika gagal
         setValues({ ...values, error: data.error });
       } else {
-        // ✅ Jika sukses, simpan token JWT dan arahkan ke halaman tujuan
         auth.authenticate(data, () => {
-          setValues({ ...values, error: "", redirectToReferrer: true });
+          setValues({ ...values, redirectToReferrer: true });
         });
       }
     });
   };
 
-  // 🔁 Tentukan halaman asal jika pengguna dialihkan ke halaman login
   const from = location.state?.from || { pathname: "/" };
 
-  // 🔀 Jika login sukses, redirect ke halaman asal
   if (values.redirectToReferrer) {
     return <Navigate to={from} />;
   }
 
-  // 🖥️ Tampilan form login
   return (
-    <StyledCard>
+    <Card
+      sx={{ maxWidth: 600, margin: "auto", textAlign: "center", mt: 5, pb: 2 }}>
       <CardContent>
         <Typography variant="h6" sx={{ mt: 2, color: "primary.main" }}>
           Sign In
         </Typography>
-
-        {/* 📧 Input Email */}
-        <StyledTextField
+        <TextField
           id="email"
           type="email"
           label="Email"
           value={values.email}
           onChange={handleChange("email")}
           margin="normal"
+          sx={{ width: 300 }}
         />
         <br />
-
-        {/* 🔑 Input Password */}
-        <StyledTextField
+        <TextField
           id="password"
           type="password"
           label="Password"
           value={values.password}
           onChange={handleChange("password")}
           margin="normal"
+          sx={{ width: 300 }}
         />
         <br />
-
-        {/* ⚠️ Tampilkan error jika ada */}
         {values.error && (
-          <Typography component="p" color="error" sx={{ mt: 2 }}>
-            <Icon color="error" sx={{ verticalAlign: "middle" }}>
-              error
-            </Icon>{" "}
+          <Typography
+            color="error"
+            sx={{ display: "flex", alignItems: "center", justifyContent: "center", mt: 2 }}>
+            <ErrorOutlineIcon sx={{ mr: 1 }} />
             {values.error}
           </Typography>
         )}
       </CardContent>
-
-      {/* 🔘 Tombol Submit */}
       <CardActions>
-        <SubmitButton color="primary" variant="contained" onClick={clickSubmit}>
+        <Button
+          color="primary"
+          variant="contained"
+          onClick={clickSubmit}
+          sx={{ margin: "auto", mb: 2 }}>
           Submit
-        </SubmitButton>
+        </Button>
       </CardActions>
-    </StyledCard>
+    </Card>
   );
 }

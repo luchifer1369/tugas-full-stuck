@@ -19,6 +19,8 @@ import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { create } from "./api-expense.js";
 import auth from "../auth/auth-helper";
 import { Link, Navigate } from "react-router-dom";
+import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
+
 
 // 🎨 Komponen bergaya untuk tampilan form
 const StyledCard = styled(Card)(({ theme }) => ({
@@ -175,10 +177,10 @@ export default function NewExpense() {
 
         {/* ⚠️ Tampilkan error jika ada */}
         {values.error && (
-          <Typography component="p" color="error">
-            <Icon color="error" sx={{ verticalAlign: "middle" }}>
-              error
-            </Icon>{" "}
+          <Typography
+            color="error"
+            sx={{ display: "flex", alignItems: "center", justifyContent: "center", mt: 2 }}>
+            <ErrorOutlineIcon sx={{ mr: 1 }} />
             {values.error}
           </Typography>
         )}
