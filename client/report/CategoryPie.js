@@ -1,75 +1,156 @@
 // 📂 Lokasi: client/report/CategoryPie.js
 
-// 🔽 Import React dan komponen tambahan dari MUI dan Recharts
-import React from "react";
-import PropTypes from "prop-types";
-import { Card, CardContent, Typography } from "@mui/material";
+import React, { useEffect, useState } from "react";
 import {
-  PieChart,
-  Pie,
-  Cell,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-} from "recharts";
+  Card,
+  CardContent,
+  Typography,
+  TextField,
+  Button,
+} from "@mui/material";
+import { styled } from "@mui/system";
+import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts";
 
-// 🎨 Warna-warna yang akan digunakan pada pie chart
+import auth from "../auth/auth-helper";
+import { listByUser } from "../expense/api-expense.js";
+
+const FilterWrapper = styled("div")({
+  display: "flex",
+  gap: "12px",
+  alignItems: "center",
+  marginBottom: "16px",
+});
+
 const COLORS = [
-  "#8884d8",
-  "#82ca9d",
-  "#ffc658",
-  "#d0ed57",
-  "#a4de6c",
-  "#ff7f50",
-  "#ffbb28",
+  "#FF5722",
+  "#4CAF50",
+  "#2196F3",
+  "#FFC107",
+  "#9C27B0",
+  "#E91E63",
+  "#00BCD4",
+  "#8BC34A",
 ];
 
-// 📊 Komponen utama untuk menampilkan pie chart berdasarkan kategori pengeluaran
-export default function CategoryPie({ totalPerCategory }) {
+export default function CategoryPie() {
+  const jwt = auth.isAuthenticated();
+  const [expenses, setExpenses] = useState([]);
+  const [fromDate, setFromDate] = useState("01/06/2025");
+  const [toDate, setToDate] = useState("30/06/2025");
+
+  const fetchData = () => {
+    const [fromDay, fromMonth, fromYear] = fromDate.split("/");
+    const [toDay, toMonth, toYear] = toDate.split("/");
+    const start = new Date(`${fromYear}-${fromMonth}-${fromDay}`);
+    const end = new Date(`${toYear}-${toMonth}-${toDay}T23:59:59`);
+
+    listByUser({}, { t: jwt.token }).then((data) => {
+      if (data.error) {
+        console.error(data.error);
+      } else {
+        const filtered = data.filter((e) => {
+          const d = new Date(e.incurred_on);
+          return d >= start && d <= end;
+        });
+        setExpenses(filtered);
+      }
+    });
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const categoryTotals = expenses.reduce((acc, item) => {
+    if (!acc[item.category]) {
+      acc[item.category] = 0;
+    }
+    acc[item.category] += item.amount;
+    return acc;
+  }, {});
+
+  const pieData = Object.keys(categoryTotals).map((k) => ({
+    name: k,
+    value: categoryTotals[k],
+  }));
+
   return (
-    // 🧾 Bungkus chart dalam Card MUI
     <Card sx={{ margin: 3 }}>
       <CardContent>
-        {/* Judul chart */}
         <Typography variant="h6" color="textSecondary" gutterBottom>
-          Total Expenses per Category
+          Expenditures per category
         </Typography>
 
-        {/* 💡 Container yang otomatis menyesuaikan ukuran layar */}
-        <ResponsiveContainer width="100%" height={300}>
+        {/* Filter Tanggal */}
+        <FilterWrapper>
+          <TextField
+            label="FROM"
+            type="text"
+            value={fromDate}
+            onChange={(e) => setFromDate(e.target.value)}
+            size="small"
+            helperText="dd/mm/yyyy"
+          />
+          <TextField
+            label="TO"
+            type="text"
+            value={toDate}
+            onChange={(e) => setToDate(e.target.value)}
+            size="small"
+            helperText="dd/mm/yyyy"
+          />
+          <Button variant="contained" onClick={fetchData}>
+            GO
+          </Button>
+        </FilterWrapper>
+
+        {/* Pie Chart */}
+        <ResponsiveContainer width="100%" height={500}>
           <PieChart>
-            {/* 🔄 Komponen Pie dari Recharts */}
             <Pie
-              data={totalPerCategory} // Data array [{ category: '', value: 0 }, ...]
-              dataKey="value" // Field yang merepresentasikan nilai
-              nameKey="category" // Label kategori
-              cx="50%" // Posisi horizontal
-              cy="50%" // Posisi vertikal
-              outerRadius={100} // Radius lingkaran luar
-              label // Menampilkan label secara otomatis
-            >
-              {/* 🎨 Pewarnaan tiap irisan pie berdasarkan index */}
-              {totalPerCategory.map((entry, index) => (
-                <Cell
-                  key={`cell-${index}`}
-                  fill={COLORS[index % COLORS.length]} // Pilih warna dari daftar
-                />
+              data={pieData}
+              dataKey="value"
+              nameKey="name"
+              cx="50%"
+              cy="40%"
+              innerRadius={60}
+              outerRadius={150}
+              paddingAngle={4}
+              stroke="black">
+              {pieData.map((_, index) => (
+                <Cell key={`cell-${index}`} fill={`url(#grad-${index})`} />
               ))}
             </Pie>
 
-            {/* 🔎 Tooltip untuk info saat hover */}
+            {/* Tooltip */}
             <Tooltip />
 
-            {/* 🧾 Legenda ditampilkan di bawah chart */}
-            <Legend verticalAlign="bottom" height={36} />
+            {/* Gradient Definitions */}
+            <defs>
+              {pieData.map((_, index) => (
+                <linearGradient
+                  key={index}
+                  id={`grad-${index}`}
+                  x1="0%"
+                  y1="0%"
+                  x2="100%"
+                  y2="100%">
+                  <stop
+                    offset="0%"
+                    stopColor={COLORS[index % COLORS.length]}
+                    stopOpacity="0.6"
+                  />
+                  <stop
+                    offset="100%"
+                    stopColor={COLORS[index % COLORS.length]}
+                    stopOpacity="1"
+                  />
+                </linearGradient>
+              ))}
+            </defs>
           </PieChart>
         </ResponsiveContainer>
       </CardContent>
     </Card>
   );
 }
-
-// ✅ Validasi prop untuk memastikan data berupa array
-CategoryPie.propTypes = {
-  totalPerCategory: PropTypes.array.isRequired,
-};

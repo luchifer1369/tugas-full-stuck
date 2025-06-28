@@ -11,7 +11,6 @@ import auth from "../auth/auth-helper";
 import { listByUser } from "../expense/api-expense";
 
 // 🔽 Import komponen visualisasi laporan
-import ExpenseOverview from "../expense/ExpenseOverview";
 import CategoryPie from "./CategoryPie";
 import MonthlyScatter from "./MonthlyScatter";
 import YearlyBar from "./YearlyBar";
@@ -21,6 +20,8 @@ const Container = styled("div")(({ theme }) => ({
   maxWidth: 1100,
   margin: "auto",
   padding: theme.spacing(3),
+  overflowY: "auto",
+  minHeight: "100vh",
 }));
 
 // 🎯 Komponen utama untuk menampilkan halaman laporan
@@ -86,12 +87,12 @@ export default function Reports() {
         </CardContent>
       </Card>
       {/* 📊 Tampilkan berbagai jenis laporan */}
-      <ExpenseOverview expenses={expenses} /> {/* ➕ Ringkasan total/avg */}
-      <CategoryPie totalPerCategory={categoryData} />{" "}
+      <MonthlyScatter expenses={expenses} />
       {/* 🍕 Pie chart by kategori */}
-      <MonthlyScatter expenses={expenses} />{" "}
+      <YearlyBar monthlyTotals={monthlyTotals} />
       {/* 📍 Scatter pengeluaran harian */}
-      <YearlyBar monthlyTotals={monthlyTotals} /> {/* 📊 Bar chart by bulan */}
+      <CategoryPie totalPerCategory={categoryData} />{" "}
+      {/* 📊 Bar chart by bulan */}
     </Container>
   );
 }

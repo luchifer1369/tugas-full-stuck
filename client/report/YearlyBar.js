@@ -1,13 +1,14 @@
 // 📂 Lokasi: client/report/YearlyBar.js
 
-// 🔽 Import React dan tipe data
-import React from "react";
-import PropTypes from "prop-types";
-
-// 🔽 Import komponen UI dari MUI
-import { Card, CardContent, Typography } from "@mui/material";
-
-// 🔽 Import komponen chart dari Recharts
+import React, { useEffect, useState } from "react";
+import {
+  Card,
+  CardContent,
+  Typography,
+  Button,
+  TextField,
+} from "@mui/material";
+import { styled } from "@mui/system";
 import {
   BarChart,
   Bar,
@@ -18,43 +19,98 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
-// 📊 Komponen untuk menampilkan grafik batang total pengeluaran bulanan sepanjang tahun
-export default function YearlyBar({ monthlyTotals }) {
-  // 🔄 Konversi objek monthlyTotals menjadi array data untuk grafik
-  const data = Object.keys(monthlyTotals).map((month) => ({
-    name: month, // 🏷️ Nama bulan (contoh: Jan, Feb, dst)
-    total: monthlyTotals[month], // 💲 Total pengeluaran bulan itu
-  }));
+import auth from "../auth/auth-helper";
+import { listByUser } from "../expense/api-expense.js";
+
+const FilterWrapper = styled("div")({
+  display: "flex",
+  alignItems: "center",
+  gap: "12px",
+  marginBottom: "16px",
+});
+
+const months = [
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
+  "May",
+  "Jun",
+  "Jul",
+  "Aug",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dec",
+];
+
+export default function YearlyBar() {
+  const jwt = auth.isAuthenticated();
+  const [year, setYear] = useState(new Date().getFullYear());
+  const [expenses, setExpenses] = useState([]);
+
+  const fetchData = () => {
+    const start = new Date(year, 0, 1);
+    const end = new Date(year + 1, 0, 1);
+
+    // Fetch all expenses within the year
+    listByUser({}, { t: jwt.token }).then((data) => {
+      if (data.error) {
+        console.error(data.error);
+      } else {
+        const filtered = data.filter((e) => {
+          const d = new Date(e.incurred_on);
+          return d >= start && d < end;
+        });
+        setExpenses(filtered);
+      }
+    });
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const monthlyTotals = months.map((_, i) => {
+    const monthExpenses = expenses.filter(
+      (e) => new Date(e.incurred_on).getMonth() === i
+    );
+    const total = monthExpenses.reduce((sum, e) => sum + e.amount, 0);
+    return { month: months[i], total };
+  });
 
   return (
     <Card sx={{ margin: 3 }}>
       <CardContent>
-        {/* 🔖 Judul chart */}
         <Typography variant="h6" color="textSecondary" gutterBottom>
-          Total Monthly Expenses (Year)
+          Your monthly expenditures in
         </Typography>
 
-        {/* 📈 Grafik batang responsif */}
+        {/* Filter Tahun */}
+        <FilterWrapper>
+          <TextField
+            label="Year"
+            type="number"
+            value={year}
+            onChange={(e) => setYear(e.target.value)}
+            size="small"
+          />
+          <Button variant="contained" onClick={fetchData}>
+            GO
+          </Button>
+        </FilterWrapper>
+
+        {/* Bar Chart */}
         <ResponsiveContainer width="100%" height={300}>
-          <BarChart data={data}>
-            {/* 🟦 Garis grid latar */}
+          <BarChart data={monthlyTotals}>
             <CartesianGrid strokeDasharray="3 3" />
-            {/* 📆 Sumbu X dengan nama bulan */}
-            <XAxis dataKey="name" />
-            {/* 💰 Sumbu Y untuk nilai total */}
+            <XAxis dataKey="month" />
             <YAxis />
-            {/* 🛠️ Tooltip saat hover */}
             <Tooltip />
-            {/* 📊 Batang data total */}
-            <Bar dataKey="total" fill="#82ca9d" />
+            <Bar dataKey="total" fill="#00bfa5" />
           </BarChart>
         </ResponsiveContainer>
       </CardContent>
     </Card>
   );
 }
-
-// 📌 Validasi prop agar monthlyTotals adalah objek (bukan array)
-YearlyBar.propTypes = {
-  monthlyTotals: PropTypes.object.isRequired,
-};
