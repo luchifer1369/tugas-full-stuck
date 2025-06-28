@@ -1,43 +1,91 @@
 // 📂 Lokasi: client/core/Menu.js
 
-// ✅ Import React dan komponen yang dibutuhkan dari MUI dan React Router
 import React from "react";
-import { AppBar, Toolbar, Typography, Button, IconButton } from "@mui/material";
+import {
+  AppBar,
+  Toolbar,
+  Typography,
+  Button,
+  IconButton,
+  Box,
+} from "@mui/material";
 import { Home } from "@mui/icons-material";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import auth from "../auth/auth-helper"; // Helper untuk autentikasi
+import auth from "../auth/auth-helper";
+import AddIcon from "@mui/icons-material/Add";
 
-// 📌 Komponen navigasi utama (navbar) aplikasi
 export default function Menu() {
-  const location = useLocation(); // Digunakan untuk mendapatkan path URL saat ini
-  const navigate = useNavigate(); // Untuk melakukan navigasi programatik
+  const location = useLocation();
+  const navigate = useNavigate();
 
-  // 🎯 Fungsi untuk menentukan warna teks berdasarkan path aktif
-  const isActive = (path) => {
-    return location.pathname === path
-      ? { color: "#ff4081" } // Warna pink jika aktif
-      : { color: "#ffffff" }; // Warna putih jika tidak aktif
-  };
+  const isActive = (path) =>
+    location.pathname === path ? { color: "#ff4081" } : { color: "#ffffff" };
 
-  // 🔒 Fungsi untuk sign out user dan redirect ke halaman utama
   const handleSignout = () => {
-    auth.clearJWT(() => navigate("/")); // Hapus JWT lalu redirect ke /
+    auth.clearJWT(() => navigate("/"));
   };
 
   return (
     <AppBar position="static">
       <Toolbar>
-        {/* 🏠 Tombol Home */}
+        {/* KIRI */}
+        <Typography variant="h6" sx={{ mr: 2 }}>
+          MERN Expense Tracker
+        </Typography>
+
         <IconButton component={Link} to="/" sx={isActive("/")}>
           <Home />
         </IconButton>
+        <Button
+          component={Link}
+          to="/expenses"
+          sx={isActive("/expenses")}
+          disabled={
+            typeof window !== "undefined" &&
+            !localStorage.getItem("hasExpenses")
+          }>
+          Expenses
+        </Button>
+        <Button component={Link} to="/reports" sx={isActive("/reports")}>
+          Reports
+        </Button>
 
-        {/* 🔠 Judul aplikasi */}
-        <Typography variant="h6" sx={{ flexGrow: 1 }}>
-          Expense Tracker
-        </Typography>
+        {/* SPACER */}
+        <Box sx={{ flexGrow: 1 }} />
 
-        {/* 👥 Menu untuk pengguna yang BELUM login */}
+        {/* KANAN */}
+        {auth.isAuthenticated() && (
+          <>
+            <Button
+              component={Link}
+              to="/expenses/new"
+              sx={{
+                ...isActive("/expenses/new"),
+                backgroundColor: "#fff",
+                color: "#2bbd7e",
+                "&:hover": {
+                  backgroundColor: "#27a86f",
+                  color: "#fff",
+                },
+              }}
+              startIcon={<AddIcon />}>
+              Add Expense
+            </Button>
+
+            {auth.isAuthenticated().user && (
+              <Button
+                component={Link}
+                to={`/user/${auth.isAuthenticated().user._id}`}
+                sx={isActive(`/user/${auth.isAuthenticated().user._id}`)}>
+                My Profile
+              </Button>
+            )}
+            <Button onClick={handleSignout} sx={{ color: "#ffffff" }}>
+              Sign out
+            </Button>
+          </>
+        )}
+
         {!auth.isAuthenticated() && (
           <>
             <Button component={Link} to="/signup" sx={isActive("/signup")}>
@@ -45,34 +93,6 @@ export default function Menu() {
             </Button>
             <Button component={Link} to="/signin" sx={isActive("/signin")}>
               Sign In
-            </Button>
-          </>
-        )}
-
-        {/* ✅ Menu untuk pengguna yang SUDAH login */}
-        {auth.isAuthenticated() && (
-          <>
-       
-            <Button component={Link} to="/expenses" sx={isActive("/expenses")}>
-              Expenses
-            </Button>
-            <Button component={Link} to="/reports" sx={isActive("/reports")}>
-              Reports
-            </Button>
-            <Button
-              component={Link}
-              to={`/user/${auth.isAuthenticated().user._id}`}
-              sx={isActive(`/user/${auth.isAuthenticated().user._id}`)}>
-              My Profile
-            </Button>
-            <Button
-              component={Link}
-              to="/expenses/new"
-              sx={isActive("/expenses/new")}>
-              Add Expense
-            </Button>
-            <Button onClick={handleSignout} sx={{ color: "#ffffff" }}>
-              Sign out
             </Button>
           </>
         )}
