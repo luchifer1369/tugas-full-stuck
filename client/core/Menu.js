@@ -52,9 +52,7 @@ export default function Menu() {
         {/* ✅ Menu untuk pengguna yang SUDAH login */}
         {auth.isAuthenticated() && (
           <>
-            <Button component={Link} to="/user" sx={isActive("/user")}>
-              Users
-            </Button>
+       
             <Button component={Link} to="/expenses" sx={isActive("/expenses")}>
               Expenses
             </Button>

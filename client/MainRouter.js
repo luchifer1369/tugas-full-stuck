@@ -29,7 +29,8 @@ export default function MainRouter() {
       <Route path="/" element={<Home />} />
       <Route path="/signup" element={<Signup />} />
       <Route path="/signin" element={<Signin />} />
-      <Route path="/user" element={<Users />} />
+
+      {/* 🔒 User Profile Routes */}
       <Route path="/user/:userId" element={<Profile />} />
       <Route path="/user/edit/:userId" element={<EditProfile />} />
       <Route path="/user/delete/:userId" element={<DeleteUser />} />
