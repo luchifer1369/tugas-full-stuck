@@ -1,70 +1,187 @@
 // 📂 Lokasi: client/expense/ExpenseOverview.js
 
-// 🧩 Import React dan PropTypes
-import React from "react";
-import PropTypes from "prop-types";
+import React, { useEffect, useState } from "react";
+import { Card, Typography, Divider, Button, Box } from "@mui/material";
+import { styled } from "@mui/system";
+import { Link } from "react-router-dom";
+import auth from "../auth/auth-helper";
+import { currentMonthPreview, expenseByCategory } from "./api-expense.js";
 
-// 🎨 Komponen UI dari Material UI
-import {
-  Card,
-  CardContent,
-  Typography,
-  Divider,
-  List,
-  ListItem,
-  ListItemText,
-} from "@mui/material";
+const Container = styled(Card)(({ theme }) => ({
+  maxWidth: 800,
+  margin: "auto",
+  marginTop: theme.spacing(5),
+  marginBottom: theme.spacing(5),
+  padding: theme.spacing(3),
+}));
 
-// 📌 Komponen untuk menampilkan ringkasan statistik pengeluaran
-export default function ExpenseOverview({ expenses }) {
-  // ✅ Hitung total semua pengeluaran
-  const total = expenses.reduce((acc, curr) => acc + curr.amount, 0);
+const TotalCircle = styled(Box)(({ theme }) => ({
+  padding: "40px",
+  fontSize: "3em",
+  backgroundColor: "#01579b",
+  color: "#70f0ae",
+  borderRadius: "50%",
+  border: "8px double #70f0ae",
+  fontWeight: 300,
+  textAlign: "center",
+  minWidth: 180,
+}));
 
-  // ✅ Hitung rata-rata pengeluaran (dengan 2 digit desimal)
-  const average =
-    expenses.length > 0 ? (total / expenses.length).toFixed(2) : 0;
+const SmallBox = styled(Box)(({ theme }) => ({
+  margin: "12px 0",
+  padding: "10px 20px",
+  border: "3px solid #58bd7f38",
+  borderRadius: "8px",
+  textAlign: "center",
+}));
 
-  // ✅ Cari nilai pengeluaran tertinggi
-  const highest = Math.max(...expenses.map((e) => e.amount), 0);
+export default function ExpenseOverview() {
+  const [expensePreview, setExpensePreview] = useState({
+    month: { totalSpent: 0 },
+    today: { totalSpent: 0 },
+    yesterday: { totalSpent: 0 },
+  });
+  const [expenseCategories, setExpenseCategories] = useState([]);
+  const [error, setError] = useState("");
 
-  // ✅ Cari nilai pengeluaran terendah
-  const lowest = Math.min(...expenses.map((e) => e.amount), 0);
+  const jwt = auth.isAuthenticated();
+
+  useEffect(() => {
+    const abortController = new AbortController();
+    const signal = abortController.signal;
+
+    currentMonthPreview({ t: jwt.token }, signal).then((data) => {
+      if (data.error) setError(data.error);
+      else setExpensePreview(data);
+    });
+
+    return () => abortController.abort();
+  }, []);
+
+  useEffect(() => {
+    const abortController = new AbortController();
+    const signal = abortController.signal;
+
+    expenseByCategory({ t: jwt.token }, signal).then((data) => {
+      if (data.error) setError(data.error);
+      else setExpenseCategories(data);
+    });
+
+    return () => abortController.abort();
+  }, []);
+
+  const indicateExpense = (values) => {
+    let color = "#4f83cc";
+    if (values.total) {
+      const diff = values.total - values.average;
+      if (diff > 0) color = "#e9858b";
+      if (diff < 0) color = "#2bbd7e";
+    }
+    return color;
+  };
 
   return (
-    <Card sx={{ margin: 3 }}>
-      <CardContent>
-        {/* 🔤 Judul ringkasan */}
-        <Typography variant="h6" color="textSecondary" gutterBottom>
-          Overview
+    <Container elevation={3}>
+      <Typography
+        variant="h5"
+        sx={{ color: "primary.main", textAlign: "center", mb: 2 }}>
+        Your Spent Overview
+      </Typography>
+
+      {error && (
+        <Typography color="error" align="center">
+          {error}
         </Typography>
+      )}
 
-        {/* 🔹 Garis pemisah */}
-        <Divider sx={{ mb: 2 }} />
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+        }}>
+        <TotalCircle>
+          ${expensePreview?.month?.totalSpent || 0}
+          <Typography sx={{ fontSize: "0.35em" }}>so far this month</Typography>
+        </TotalCircle>
 
-        {/* 📋 Daftar statistik */}
-        <List>
-          <ListItem>
-            <ListItemText primary="Total Expenses" secondary={`$${total}`} />
-          </ListItem>
-          <ListItem>
-            <ListItemText
-              primary="Average per Entry"
-              secondary={`$${average}`}
-            />
-          </ListItem>
-          <ListItem>
-            <ListItemText primary="Highest Expense" secondary={`$${highest}`} />
-          </ListItem>
-          <ListItem>
-            <ListItemText primary="Lowest Expense" secondary={`$${lowest}`} />
-          </ListItem>
-        </List>
-      </CardContent>
-    </Card>
+        <Box sx={{ ml: 3 }}>
+          <SmallBox>
+            <Typography variant="h6">
+              ${expensePreview?.today?.totalSpent || 0}
+            </Typography>
+            <Typography variant="body2">today</Typography>
+          </SmallBox>
+          <SmallBox>
+            <Typography variant="h6">
+              ${expensePreview?.yesterday?.totalSpent || 0}
+            </Typography>
+            <Typography variant="body2">yesterday</Typography>
+          </SmallBox>
+          <Button
+            component={Link}
+            to="/expenses"
+            variant="outlined"
+            sx={{ mt: 1 }}>
+            See more
+          </Button>
+        </Box>
+      </Box>
+
+      <Divider sx={{ my: 2 }} />
+
+      {expenseCategories.map((expense, index) => (
+        <Box key={index} sx={{ mb: 2, textAlign: "center" }}>
+          <Typography
+            variant="subtitle1"
+            sx={{
+              display: "inline-block",
+              backgroundColor: "#f4f6f9",
+              px: 2,
+              py: 1,
+            }}>
+            {expense._id}
+          </Typography>
+          <Divider
+            sx={{
+              my: 1,
+              height: 4,
+              backgroundColor: indicateExpense(expense.mergedValues),
+            }}
+          />
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "center",
+              gap: 2,
+              flexWrap: "wrap",
+            }}>
+            <Box>
+              <Typography variant="caption">Past Average</Typography>
+              <Typography>${expense.mergedValues.average}</Typography>
+            </Box>
+            <Box>
+              <Typography variant="caption">This Month</Typography>
+              <Typography>${expense.mergedValues.total || 0}</Typography>
+            </Box>
+            <Box>
+              <Typography variant="caption">
+                {expense.mergedValues.total - expense.mergedValues.average > 0
+                  ? "Spent Extra"
+                  : "Saved"}
+              </Typography>
+              <Typography>
+                $
+                {expense.mergedValues.total
+                  ? Math.abs(
+                      expense.mergedValues.total - expense.mergedValues.average
+                    )
+                  : expense.mergedValues.average}
+              </Typography>
+            </Box>
+          </Box>
+        </Box>
+      ))}
+    </Container>
   );
 }
-
-// 📦 Validasi properti
-ExpenseOverview.propTypes = {
-  expenses: PropTypes.array.isRequired, // ⬅️ Harus berupa array berisi objek expense
-};

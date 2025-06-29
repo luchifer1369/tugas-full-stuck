@@ -1,34 +1,40 @@
 // 📂 Lokasi: client/core/Home.js
 
-// ✅ Import React dan komponen dari Material UI (MUI)
 import React from "react";
 import { Card, CardContent, Typography } from "@mui/material";
 import { styled } from "@mui/system";
+import auth from "../auth/auth-helper";
+import ExpenseOverview from "../expense/ExpenseOverview";
+import { Link } from "react-router-dom";
 
-// 🎨 Styling untuk komponen Card menggunakan MUI styled utility
 const StyledCard = styled(Card)(({ theme }) => ({
-  maxWidth: 600, // Lebar maksimal card
-  margin: "auto", // Posisi tengah secara horizontal
-  marginTop: theme.spacing(5), // Jarak dari atas
-  padding: theme.spacing(3), // Padding internal card
-  textAlign: "center", // Teks rata tengah
-  backgroundColor: "#f5f5f5", // Warna latar card
+  maxWidth: 600,
+  margin: "auto",
+  marginTop: theme.spacing(5),
+  padding: theme.spacing(3),
+  textAlign: "center",
 }));
 
-// 🏠 Komponen utama halaman Home
 export default function Home() {
+  const isLoggedIn = auth.isAuthenticated();
+
+  if (isLoggedIn) {
+    return <ExpenseOverview />;
+  }
+
   return (
     <StyledCard>
       <CardContent>
-        {/* 🧾 Judul utama halaman */}
         <Typography variant="h4" gutterBottom sx={{ color: "primary.main" }}>
           MERN Expense Tracker
         </Typography>
-
-        {/* 📝 Deskripsi singkat tentang fungsi aplikasi */}
-        <Typography variant="subtitle1">
+        <Typography variant="subtitle1" gutterBottom>
           A full-stack web app to track your daily, monthly, and yearly
           expenses.
+        </Typography>
+        <Typography variant="body2" sx={{ mt: 2 }}>
+          <Link to="/signup">Sign up</Link> or <Link to="/signin">Sign in</Link>{" "}
+          to start tracking your expenses.
         </Typography>
       </CardContent>
     </StyledCard>

@@ -1,3 +1,4 @@
+// server/routes/expense.routes.js
 // Import express dan controller terkait
 import express from "express";
 import expenseCtrl from "../controllers/expense.controller.js";
@@ -36,6 +37,11 @@ router
 // Middleware param -> otomatis dipanggil ketika ada ":expenseId" di URL
 // Fungsi ini akan menambahkan objek expense ke req.expense
 router.param("expenseId", expenseCtrl.expenseByID);
+
+// 📊 Route untuk mengambil daftar pengeluaran berdasarkan kategori
+router
+  .route("/category")
+  .get(authCtrl.requireSignin, expenseCtrl.expenseByCategory);
 
 // Ekspor router agar bisa digunakan di file server utama
 export default router;

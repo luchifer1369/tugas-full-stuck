@@ -1,7 +1,7 @@
 // 📂 Lokasi: server/controllers/expense.controller.js
 
 import Expense from "../models/expense.model.js";
-
+import mongoose from "mongoose";
 /**
  * 📥 Create a new expense for the logged-in user
  */
@@ -118,6 +118,30 @@ const expenseByID = async (req, res, next, id) => {
   }
 };
 
+const expenseByCategory = async (req, res) => {
+  try {
+    console.log("req.auth", req.auth);
+    const categories = await Expense.aggregate([
+      {
+        $match: {
+          user: req.auth._id, // Pastikan ini benar ObjectId
+        },
+      },
+      {
+        $group: {
+          _id: "$category",
+          total: { $sum: "$amount" },
+          average: { $avg: "$amount" },
+        },
+      },
+    ]);
+    res.json(categories);
+  } catch (err) {
+    console.error("ERROR expenseByCategory:", err);
+    res.status(400).json({ error: "Could not group expenses by category" });
+  }
+};
+
 // 🚀 Export semua controller untuk digunakan di router
 export default {
   create,
@@ -127,4 +151,5 @@ export default {
   remove,
   currentMonthPreview,
   expenseByID,
+  expenseByCategory,
 };

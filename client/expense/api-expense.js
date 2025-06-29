@@ -90,5 +90,28 @@ const currentMonthPreview = async (credentials, signal) => {
   }
 };
 
+const expenseByCategory = async (credentials, signal) => {
+  try {
+    let response = await fetch("/api/expenses/category", {
+      method: "GET",
+      signal: signal,
+      headers: {
+        Accept: "application/json",
+        Authorization: "Bearer " + credentials.t,
+      },
+    });
+    return await response.json();
+  } catch (err) {
+    console.log(err);
+  }
+};
+
 // 🚀 Mengekspor semua fungsi API yang dapat digunakan oleh komponen lain
-export { create, listByUser, update, remove, currentMonthPreview };
+export {
+  create,
+  listByUser,
+  update,
+  remove,
+  currentMonthPreview,
+  expenseByCategory,
+};
