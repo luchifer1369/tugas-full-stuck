@@ -1,3 +1,5 @@
+// 📂 Lokasi: server/models/expense.model.js
+
 import mongoose from "mongoose";
 
 // Definisikan struktur dokumen Expense dalam MongoDB
@@ -25,7 +27,13 @@ const ExpenseSchema = new mongoose.Schema(
       type: Date,
       default: Date.now, // default: waktu saat ini jika tidak diisi
     },
-    // Tanggal terakhir pengeluaran diubah (manual)
+    // Catatan tambahan
+    notes: {
+      type: String,
+      default: "", // ✅ agar tidak undefined
+      trim: true,
+    },
+    // Tanggal terakhir pengeluaran diubah (opsional)
     updated: Date,
     // Referensi ke user yang membuat pengeluaran
     user: {

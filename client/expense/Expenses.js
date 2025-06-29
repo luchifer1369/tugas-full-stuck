@@ -218,7 +218,7 @@ export default function Expenses() {
                 label="Notes"
                 multiline
                 rows={2}
-                value={expense.notes}
+                value={expense.notes || ""}
                 onChange={handleChange("notes", index)}
                 fullWidth
                 margin="dense"

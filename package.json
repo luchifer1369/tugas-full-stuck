@@ -9,7 +9,8 @@
     "clean": "rimraf dist node_modules yarn.lock",
     "development": "cross-env NODE_ENV=development nodemon server.js",
     "build": "webpack --config webpack.config.client.production.js && webpack --mode=production --config webpack.config.server.js",
-    "start": "cross-env NODE_ENV=production node ./dist/server.generated.js"
+    "start": "cross-env NODE_ENV=production node ./dist/server.generated.js",
+    "postinstall": "npm run build"
   },
   "engines": {
     "node": ">=20.0.0",
@@ -55,5 +56,6 @@
     "webpack-dev-middleware": "^7.4.2",
     "webpack-hot-middleware": "^2.26.1",
     "webpack-node-externals": "^3.0.0"
-  }
+  },
+  "enginesStrict": true
 }
