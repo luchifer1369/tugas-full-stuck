@@ -43,7 +43,7 @@ export default function Menu() {
               component={Link}
               to="/expenses"
               sx={isActive("/expenses")}
-              disabled={
+              enable={
                 typeof window !== "undefined" &&
                 !localStorage.getItem("hasExpenses")
               }>

@@ -1,79 +1,88 @@
 // 📂 Lokasi: client/expense/api-expense.js
 
-// 📦 Digunakan untuk membuat string query dari objek parameter
 import queryString from "query-string";
 
-// 📌 Fungsi untuk membuat data pengeluaran baru
+/**
+ * 📌 Membuat data pengeluaran baru
+ */
 const create = async (credentials, expense) => {
   try {
     const response = await fetch("/api/expenses/", {
-      method: "POST", // Metode HTTP POST untuk membuat data baru
-      headers: {
-        Accept: "application/json", // Menerima response dalam format JSON
-        "Content-Type": "application/json", // Mengirim data dalam format JSON
-        Authorization: `Bearer ${credentials.t}`, // Token autentikasi Bearer
-      },
-      body: JSON.stringify(expense), // Mengubah objek expense menjadi JSON string
-    });
-    return await response.json(); // Mengembalikan response sebagai JSON
-  } catch (err) {
-    console.error(err); // Menampilkan error di konsol jika request gagal
-  }
-};
-
-// 📌 Fungsi untuk mengambil daftar pengeluaran berdasarkan parameter user dan waktu
-const listByUser = async (params, credentials, signal) => {
-  const query = queryString.stringify(params); // Mengubah params ke format query string
-  try {
-    const response = await fetch(`/api/expenses?${query}`, {
-      method: "GET", // Mengambil data (baca)
-      signal: signal, // Untuk mengontrol fetch (bisa dibatalkan)
-      headers: {
-        Accept: "application/json",
-        Authorization: `Bearer ${credentials.t}`,
-      },
-    });
-    return await response.json(); // Mengembalikan data expense dari backend
-  } catch (err) {
-    console.error(err);
-  }
-};
-
-// 📌 Fungsi untuk memperbarui data expense berdasarkan ID
-const update = async (params, credentials, expense) => {
-  try {
-    const response = await fetch(`/api/expenses/${params.expenseId}`, {
-      method: "PUT", // PUT digunakan untuk update data
+      method: "POST",
       headers: {
         Accept: "application/json",
         "Content-Type": "application/json",
         Authorization: `Bearer ${credentials.t}`,
       },
-      body: JSON.stringify(expense), // Kirim data baru yang diupdate
+      body: JSON.stringify(expense),
     });
-    return await response.json(); // Mengembalikan hasil update
+    return await response.json();
   } catch (err) {
-    console.error(err);
+    console.error("❌ create() error:", err);
   }
 };
 
-// 📌 Fungsi untuk menghapus expense berdasarkan ID
-const remove = async (params, credentials) => {
+/**
+ * 📌 Mengambil daftar pengeluaran berdasarkan parameter user dan waktu
+ */
+const listByUser = async (params, credentials, signal) => {
+  const query = queryString.stringify(params);
   try {
-    const response = await fetch(`/api/expenses/${params.expenseId}`, {
-      method: "DELETE", // DELETE untuk menghapus data
+    const response = await fetch(`/api/expenses?${query}`, {
+      method: "GET",
+      signal: signal,
       headers: {
         Accept: "application/json",
         Authorization: `Bearer ${credentials.t}`,
       },
     });
-    return await response.json(); // Mengembalikan status atau pesan dari server
+    return await response.json();
   } catch (err) {
-    console.error(err);
+    console.error("❌ listByUser() error:", err);
   }
 };
 
-// 📌 Fungsi untuk menampilkan ringkasan pengeluaran bulan ini (preview)
+/**
+ * 📌 Memperbarui data expense berdasarkan ID
+ */
+const update = async (params, credentials, expense) => {
+  try {
+    const response = await fetch(`/api/expenses/${params.expenseId}`, {
+      method: "PUT",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${credentials.t}`,
+      },
+      body: JSON.stringify(expense),
+    });
+    return await response.json();
+  } catch (err) {
+    console.error("❌ update() error:", err);
+  }
+};
+
+/**
+ * 📌 Menghapus expense berdasarkan ID
+ */
+const remove = async (params, credentials) => {
+  try {
+    const response = await fetch(`/api/expenses/${params.expenseId}`, {
+      method: "DELETE",
+      headers: {
+        Accept: "application/json",
+        Authorization: `Bearer ${credentials.t}`,
+      },
+    });
+    return await response.json();
+  } catch (err) {
+    console.error("❌ remove() error:", err);
+  }
+};
+
+/**
+ * 📌 Menampilkan ringkasan pengeluaran bulan ini
+ */
 const currentMonthPreview = async (credentials, signal) => {
   try {
     const response = await fetch("/api/expenses/current/preview", {
@@ -84,29 +93,31 @@ const currentMonthPreview = async (credentials, signal) => {
         Authorization: `Bearer ${credentials.t}`,
       },
     });
-    return await response.json(); // Mengembalikan data ringkasan bulanan
+    return await response.json();
   } catch (err) {
-    console.error(err);
+    console.error("❌ currentMonthPreview() error:", err);
   }
 };
 
+/**
+ * 📌 Mengambil daftar pengeluaran yang dikelompokkan berdasarkan kategori
+ */
 const expenseByCategory = async (credentials, signal) => {
   try {
-    let response = await fetch("/api/expenses/category", {
+    const response = await fetch("/api/expenses/category", {
       method: "GET",
       signal: signal,
       headers: {
         Accept: "application/json",
-        Authorization: "Bearer " + credentials.t,
+        Authorization: `Bearer ${credentials.t}`,
       },
     });
     return await response.json();
   } catch (err) {
-    console.log(err);
+    console.error("❌ expenseByCategory() error:", err);
   }
 };
 
-// 🚀 Mengekspor semua fungsi API yang dapat digunakan oleh komponen lain
 export {
   create,
   listByUser,

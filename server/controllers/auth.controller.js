@@ -25,14 +25,14 @@ const signin = async (req, res) => {
 
     if (!user) {
       return res.status(401).json({
-        error: "User not found", // ⚠️ Jika user tidak ditemukan
+        error: "User not found",
       });
     }
 
     // 🔑 Verifikasi password menggunakan method authenticate dari model
     if (!user.authenticate(password)) {
       return res.status(401).json({
-        error: "Email and password do not match", // ⚠️ Jika password salah
+        error: "Email and password do not match",
       });
     }
 
@@ -41,16 +41,15 @@ const signin = async (req, res) => {
       expiresIn: "7d", // Token berlaku 7 hari
     });
 
-    // 🍪 Simpan token di cookie (opsional, biasanya frontend pakai Authorization header)
+    // 🍪 Simpan token di cookie (opsional)
     res.cookie("t", token, { expire: new Date() + 9999 });
 
-    // ✅ Kirim token dan user info (tanpa password!)
+    // ✅ Kirim token dan user info
     return res.json({
       token,
       user: { _id: user._id, name: user.name, email: user.email },
     });
   } catch (err) {
-    // ⚠️ Error umum jika gagal login
     return res.status(401).json({
       error: "Could not sign in",
     });

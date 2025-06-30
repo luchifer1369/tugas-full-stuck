@@ -2,6 +2,7 @@
 
 import Expense from "../models/expense.model.js";
 import mongoose from "mongoose";
+
 /**
  * 📥 Create a new expense for the logged-in user
  */
@@ -17,18 +18,15 @@ const create = async (req, res) => {
 
 /**
  * 📄 List all expenses for the current user
- * Supports optional filtering by category or month (YYYY-MM format)
  */
 const listByUser = async (req, res) => {
   const user = req.auth._id;
   const query = {};
 
-  // 🔍 Filter by category if provided
   if (req.query.category) {
     query.category = req.query.category;
   }
 
-  // 📅 Filter by month (e.g., 2025-06)
   if (req.query.month) {
     const start = new Date(req.query.month);
     const end = new Date(start);
@@ -47,14 +45,14 @@ const listByUser = async (req, res) => {
 };
 
 /**
- * 📘 Read a specific expense (already preloaded in req.expense)
+ * 📘 Read a specific expense
  */
 const read = (req, res) => {
   return res.json(req.expense);
 };
 
 /**
- * ✏️ Update a specific expense by ID
+ * ✏️ Update a specific expense
  */
 const update = async (req, res) => {
   try {
@@ -85,25 +83,75 @@ const remove = async (req, res) => {
  * 📊 Return preview of current month's expenses
  */
 const currentMonthPreview = async (req, res) => {
-  const start = new Date();
-  start.setDate(1); // ⬅️ start of month
-  const end = new Date(start);
-  end.setMonth(start.getMonth() + 1); // ➡️ start of next month
+  const userId = new mongoose.Types.ObjectId(req.auth._id);
+
+  const startOfMonth = new Date();
+  startOfMonth.setDate(1);
+  startOfMonth.setHours(0, 0, 0, 0);
+
+  const endOfMonth = new Date(startOfMonth);
+  endOfMonth.setMonth(endOfMonth.getMonth() + 1);
+
+  const startOfToday = new Date();
+  startOfToday.setHours(0, 0, 0, 0);
+
+  const startOfYesterday = new Date(startOfToday);
+  startOfYesterday.setDate(startOfYesterday.getDate() - 1);
+
+  const endOfYesterday = new Date(startOfToday);
+
+  console.log("==== CURRENT MONTH PREVIEW ====");
+  console.log("userId:", userId);
+  console.log("startOfMonth:", startOfMonth);
+  console.log("endOfMonth:", endOfMonth);
+  console.log("startOfToday:", startOfToday);
+  console.log("startOfYesterday:", startOfYesterday);
+  console.log("endOfYesterday:", endOfYesterday);
 
   try {
-    const preview = await Expense.find({
-      user: req.auth._id,
-      incurred_on: { $gte: start, $lt: end },
+    const monthExpenses = await Expense.aggregate([
+      {
+        $match: {
+          user: userId,
+          incurred_on: { $gte: startOfMonth, $lt: endOfMonth },
+        },
+      },
+      { $group: { _id: null, totalSpent: { $sum: "$amount" } } },
+    ]);
+
+    const todayExpenses = await Expense.aggregate([
+      {
+        $match: {
+          user: userId,
+          incurred_on: { $gte: startOfToday },
+        },
+      },
+      { $group: { _id: null, totalSpent: { $sum: "$amount" } } },
+    ]);
+
+    const yesterdayExpenses = await Expense.aggregate([
+      {
+        $match: {
+          user: userId,
+          incurred_on: { $gte: startOfYesterday, $lt: endOfYesterday },
+        },
+      },
+      { $group: { _id: null, totalSpent: { $sum: "$amount" } } },
+    ]);
+
+    res.json({
+      month: { totalSpent: monthExpenses[0]?.totalSpent || 0 },
+      today: { totalSpent: todayExpenses[0]?.totalSpent || 0 },
+      yesterday: { totalSpent: yesterdayExpenses[0]?.totalSpent || 0 },
     });
-    res.json(preview);
   } catch (err) {
+    console.error("ERROR currentMonthPreview:", err);
     res.status(400).json({ error: "Could not get current month preview" });
   }
 };
 
 /**
- * 🧩 Middleware: Load expense by ID and attach to req
- * Required for route parameters like :expenseId
+ * 🧩 Load expense by ID
  */
 const expenseByID = async (req, res, next, id) => {
   try {
@@ -118,13 +166,20 @@ const expenseByID = async (req, res, next, id) => {
   }
 };
 
+/**
+ * 📊 Group expenses by category
+ */
 const expenseByCategory = async (req, res) => {
+  const userId = new mongoose.Types.ObjectId(req.auth._id);
+
   try {
-    console.log("req.auth", req.auth);
+    console.log("==== EXPENSE BY CATEGORY ====");
+    console.log("userId:", userId);
+
     const categories = await Expense.aggregate([
       {
         $match: {
-          user: req.auth._id, // Pastikan ini benar ObjectId
+          user: userId,
         },
       },
       {
@@ -135,6 +190,7 @@ const expenseByCategory = async (req, res) => {
         },
       },
     ]);
+
     res.json(categories);
   } catch (err) {
     console.error("ERROR expenseByCategory:", err);
@@ -142,7 +198,7 @@ const expenseByCategory = async (req, res) => {
   }
 };
 
-// 🚀 Export semua controller untuk digunakan di router
+// 🚀 Export semua controller
 export default {
   create,
   listByUser,

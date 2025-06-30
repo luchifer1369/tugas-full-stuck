@@ -46,34 +46,34 @@ export default function ExpenseOverview() {
 
   const jwt = auth.isAuthenticated();
 
-  useEffect(() => {
-    const abortController = new AbortController();
-    const signal = abortController.signal;
+useEffect(() => {
+  const abortController = new AbortController();
+  const signal = abortController.signal;
 
-    currentMonthPreview({ t: jwt.token }, signal).then((data) => {
-      if (data.error) setError(data.error);
-      else setExpensePreview(data);
-    });
+  currentMonthPreview({ t: jwt.token }, signal).then((data) => {
+    if (data?.error) setError(data.error);
+    else setExpensePreview(data);
+  });
 
-    return () => abortController.abort();
-  }, []);
+  return () => abortController.abort();
+}, []);
 
-  useEffect(() => {
-    const abortController = new AbortController();
-    const signal = abortController.signal;
+useEffect(() => {
+  const abortController = new AbortController();
+  const signal = abortController.signal;
 
-    expenseByCategory({ t: jwt.token }, signal).then((data) => {
-      if (data.error) setError(data.error);
-      else setExpenseCategories(data);
-    });
+  expenseByCategory({ t: jwt.token }, signal).then((data) => {
+    if (data?.error) setError(data.error);
+    else setExpenseCategories(data);
+  });
 
-    return () => abortController.abort();
-  }, []);
+  return () => abortController.abort();
+}, []);
 
-  const indicateExpense = (values) => {
+  const indicateExpense = (category) => {
     let color = "#4f83cc";
-    if (values.total) {
-      const diff = values.total - values.average;
+    if (category.total) {
+      const diff = category.total - category.average;
       if (diff > 0) color = "#e9858b";
       if (diff < 0) color = "#2bbd7e";
     }
@@ -146,7 +146,7 @@ export default function ExpenseOverview() {
             sx={{
               my: 1,
               height: 4,
-              backgroundColor: indicateExpense(expense.mergedValues),
+              backgroundColor: indicateExpense(expense),
             }}
           />
           <Box
@@ -158,25 +158,21 @@ export default function ExpenseOverview() {
             }}>
             <Box>
               <Typography variant="caption">Past Average</Typography>
-              <Typography>${expense.mergedValues.average}</Typography>
+              <Typography>${expense.average?.toFixed(2)}</Typography>
             </Box>
             <Box>
               <Typography variant="caption">This Month</Typography>
-              <Typography>${expense.mergedValues.total || 0}</Typography>
+              <Typography>${expense.total?.toFixed(2)}</Typography>
             </Box>
             <Box>
               <Typography variant="caption">
-                {expense.mergedValues.total - expense.mergedValues.average > 0
-                  ? "Spent Extra"
-                  : "Saved"}
+                {expense.total - expense.average > 0 ? "Spent Extra" : "Saved"}
               </Typography>
               <Typography>
                 $
-                {expense.mergedValues.total
-                  ? Math.abs(
-                      expense.mergedValues.total - expense.mergedValues.average
-                    )
-                  : expense.mergedValues.average}
+                {Math.abs(
+                  (expense.total || 0) - (expense.average || 0)
+                ).toFixed(2)}
               </Typography>
             </Box>
           </Box>
